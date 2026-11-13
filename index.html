@@ -234,10 +234,8 @@ body { margin: 0; }
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script>
-/* ====== CONFIGURACIÓN ======
-   Pega aquí la URL de tu aplicación web de Google Apps Script (termina en /exec). */
-const API_URL = "PEGA_AQUI_LA_URL_DE_APPS_SCRIPT";
-/* =========================== */
+/* Las inscripciones se guardan a través de la función de servidor del propio proyecto (api/salsa.js). */
+const API_URL = "/api/salsa";
 
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -258,7 +256,7 @@ const API_URL = "PEGA_AQUI_LA_URL_DE_APPS_SCRIPT";
   const full = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long" }).format(classDay);
   $("dateLine").textContent = full.charAt(0).toUpperCase() + full.slice(1);
 
-  const configured = /^https:\/\//.test(API_URL);
+  const configured = !!API_URL;
   let attendees = [], step = 1, pickedRole = null, busy = false;
   let pin = store.get("salsa.pin");
   let mine = store.get("salsa.mine");
@@ -267,16 +265,15 @@ const API_URL = "PEGA_AQUI_LA_URL_DE_APPS_SCRIPT";
 
   /* ---- API ---- */
   async function apiGet() {
-    const r = await fetch(API_URL + "?action=list&date=" + encodeURIComponent(DATE));
+    const r = await fetch(API_URL + "?date=" + encodeURIComponent(DATE), { cache: "no-store" });
     const j = await r.json(); if (!j.ok) throw new Error(j.error || "Error"); return j;
   }
   async function apiPost(body) {
-    // Sin cabecera Content-Type: se envía como text/plain y el navegador no hace preflight CORS.
-    const r = await fetch(API_URL, { method: "POST", body: JSON.stringify(body) });
+    const r = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const j = await r.json(); if (!j.ok) throw new Error(j.error || "Error"); return j;
   }
   async function refresh(quiet) {
-    if (!configured) { setStatus("Falta configurar la conexión con Google (API_URL)."); return; }
+    if (!configured) { setStatus("No se pudo conectar con el servidor."); return; }
     try { const j = await apiGet(); attendees = j.attendees || []; setStatus(""); render(); }
     catch (e) { if (!quiet) setStatus("No se pudo cargar la lista. Comprueba tu conexión y recarga."); }
   }
@@ -343,7 +340,7 @@ const API_URL = "PEGA_AQUI_LA_URL_DE_APPS_SCRIPT";
   }
 
   async function act(body, okMsg) {
-    if (!configured) { toast("Falta configurar la conexión con Google"); return false; }
+    if (!configured) { toast("No se pudo conectar con el servidor"); return false; }
     busy = true; render();
     try {
       const j = await apiPost(Object.assign({ date: DATE }, body));
@@ -382,7 +379,7 @@ const API_URL = "PEGA_AQUI_LA_URL_DE_APPS_SCRIPT";
   $("pinGo").addEventListener("click", async () => {
     const p = $("pin").value.trim(); if (!p || !configured) return;
     try {
-      const r = await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "checkPin", pin: p }) });
+      const r = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "checkPin", pin: p }) });
       const j = await r.json();
       if (j.ok) { pin = p; store.set("salsa.pin", p); $("pinBox").hidden = true; $("pin").value = ""; toast("Modo profe activado"); go(3); }
       else toast("PIN incorrecto");
