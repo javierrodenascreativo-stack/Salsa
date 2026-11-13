@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Clase del Viernes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Yellowtail&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: a single card in the middle of a salsa-night poster; three "pasos" (screens) swap inside it,
+   with the salsa count (1 2 3 · 5 6 7 ·) as the step indicator. Deliberately one dark club-night look. */
+:root {
+  --night: #1b0d1f;
+  --night-2: #2a1430;
+  --card: #2f1735;
+  --ink: #fff3e6;
+  --muted: #d6b9c9;
+  --line: #4d2a55;
+  --lead: #ffc63d;      /* líderes: dorado */
+  --follow: #ff5468;    /* followers: rojo salsa */
+  --accent: #ff8a2a;    /* naranja tropical */
+  --ok: #4fd9a0;
+  --font-display: "Bungee", "Impact", "Arial Black", sans-serif;
+  --font-script: "Yellowtail", "Brush Script MT", cursive;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body {
+  background-color: var(--night);
+  background-image:
+    radial-gradient(ellipse at 50% -10%, rgba(255,138,42,.28), transparent 60%),
+    repeating-conic-gradient(from 0deg at 50% -10%, rgba(255,198,61,.06) 0deg 6deg, transparent 6deg 14deg);
+  color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+}
+.wrap { max-width: 520px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 18px; }
+
+header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.script { font-family: var(--font-script); color: var(--accent); font-size: 40px; line-height: 1; transform: rotate(-4deg); text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: 26px; letter-spacing: .02em; margin: 0; text-wrap: balance; }
+.date { color: var(--muted); font-size: 14px; font-weight: 500; }
+
+/* Salsa count as step indicator */
+.count-strip { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+.beat { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  font-family: var(--font-display); font-size: 13px; color: var(--muted); border: 1.5px solid var(--line); }
+.beat.rest { border-style: dashed; opacity: .55; }
+.beat.done { color: var(--night); background: var(--muted); border-color: var(--muted); }
+.beat.now { color: var(--night); background: var(--accent); border-color: var(--accent); transform: scale(1.12); }
+.strip-label { text-align: center; font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 26px 22px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.35); display: flex; flex-direction: column; gap: 20px; position: relative; overflow: hidden; }
+.card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 6px;
+  background: linear-gradient(90deg, var(--lead), var(--accent), var(--follow)); }
+h2 { font-family: var(--font-display); font-weight: 400; font-size: 20px; margin: 0; text-wrap: balance; }
+
+label { display: block; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+input[type="text"] { width: 100%; font: inherit; font-size: 17px; padding: 13px 14px; border-radius: 12px;
+  border: 1.5px solid var(--line); background: var(--night-2); color: var(--ink); }
+input::placeholder { color: #9b7c8d; }
+.roles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.role { font: inherit; cursor: pointer; padding: 16px 10px; border-radius: 16px; border: 2px solid var(--line);
+  background: var(--night-2); color: var(--ink); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.role .big { font-family: var(--font-display); font-size: 17px; }
+.role small { color: var(--muted); font-size: 12px; }
+.role.lead[aria-pressed="true"] { border-color: var(--lead); background: rgba(255,198,61,.14); }
+.role.lead[aria-pressed="true"] .big { color: var(--lead); }
+.role.follow[aria-pressed="true"] { border-color: var(--follow); background: rgba(255,84,104,.14); }
+.role.follow[aria-pressed="true"] .big { color: var(--follow); }
+
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.btn { font: inherit; font-weight: 700; cursor: pointer; border-radius: 999px; padding: 13px 22px; border: 2px solid transparent; }
+.btn.primary { background: var(--accent); color: var(--night); font-family: var(--font-display); font-weight: 400; letter-spacing: .02em; }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.link { background: none; border: none; padding: 6px 4px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-weight: 500; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--lead); outline-offset: 2px; }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.mine { font-size: 14px; font-weight: 700; padding: 10px 14px; border-radius: 12px; background: var(--night-2); border: 1px solid var(--line); }
+
+/* Paso 2: counts */
+.tally { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tile { border-radius: 18px; padding: 18px 12px; text-align: center; background: var(--night-2); border: 2px solid var(--line); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tile.lead { border-color: var(--lead); }
+.tile.follow { border-color: var(--follow); }
+.tile .n { font-family: var(--font-display); font-size: 64px; line-height: 1; font-variant-numeric: tabular-nums; }
+.tile.lead .n { color: var(--lead); }
+.tile.follow .n { color: var(--follow); }
+.tile .lbl { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.tile .sub { font-size: 12px; color: var(--muted); }
+details { font-size: 14px; }
+summary { cursor: pointer; color: var(--muted); }
+.names { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+.names ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.names li { display: flex; align-items: center; gap: 6px; overflow-wrap: anywhere; }
+.names li .tag { font-size: 11px; color: var(--muted); }
+.names li button { margin-left: auto; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; }
+.names h3 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+.names .lead h3 { color: var(--lead); }
+.names .follow h3 { color: var(--follow); }
+
+/* Paso 3: verdict */
+.verdict { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; padding-block: 8px; }
+.verdict .pre { font-family: var(--font-script); font-size: 34px; color: var(--accent); line-height: 1.1; }
+.verdict .num { font-family: var(--font-display); font-size: 96px; line-height: 1; font-variant-numeric: tabular-nums; }
+.verdict .what { font-family: var(--font-display); font-size: 26px; }
+.verdict .when { font-size: 16px; color: var(--muted); }
+.verdict.need-follow .num, .verdict.need-follow .what { color: var(--follow); }
+.verdict.need-lead .num, .verdict.need-lead .what { color: var(--lead); }
+.verdict.ok .what { color: var(--ok); }
+.pairs { font-size: 14px; color: var(--muted); }
+.teacher { border-top: 1px dashed var(--line); padding-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+.teacher h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+
+.status { text-align: center; font-size: 13px; color: var(--muted); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--ink); color: var(--night); padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 700; max-width: calc(100% - 32px); text-align: center; }
+@media (max-width: 420px) { .tile .n { font-size: 52px; } .verdict .num { font-size: 80px; } .beat { width: 28px; height: 28px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .step { animation: in .35s ease-out; }
+  @keyframes in { from { transform: translateY(8px); } to { transform: none; } }
+  .beat { transition: transform .2s, background .2s; }
+}
+</style>
+<style>
+[hidden] { display: none !important; }
+body { margin: 0; }
+.pin-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.pin-row input { flex: 1; min-width: 0; }
+.foot { text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="script">¡Salsa!</span>
+    <h1>Clase del viernes</h1>
+    <span class="date" id="dateLine"></span>
+  </header>
+
+  <div>
+    <div class="count-strip" id="strip" aria-hidden="true"></div>
+    <p class="strip-label" id="stripLabel">Paso 1 de 3</p>
+  </div>
+
+  <p class="status" id="status">Cargando apuntados…</p>
+
+  <!-- Paso 1 -->
+  <section class="card step" id="step1" aria-labelledby="h1s">
+    <h2 id="h1s">¿Vienes a bailar?</h2>
+    <div id="mineBox" class="mine" hidden></div>
+    <div>
+      <label for="myName">Nombre y apellido</label>
+      <input type="text" id="myName" maxlength="60" autocomplete="name" placeholder="Ej. Lucía Martín">
+    </div>
+    <div>
+      <label>Rol</label>
+      <div class="roles">
+        <button type="button" class="role lead" id="pickLead" aria-pressed="false"><span class="big">Líder</span><small>lleva</small></button>
+        <button type="button" class="role follow" id="pickFollow" aria-pressed="false"><span class="big">Follower</span><small>sigue</small></button>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="confirm" type="button" disabled>¡Me apunto!</button>
+      <button class="btn ghost" id="cancel" type="button" hidden>Ya no puedo ir</button>
+      <button class="btn link" id="skip" type="button">Ver apuntados</button>
+    </div>
+  </section>
+
+  <!-- Paso 2 -->
+  <section class="card step" id="step2" hidden aria-labelledby="h2s">
+    <h2 id="h2s">Apuntados</h2>
+    <div class="tally">
+      <div class="tile lead"><span class="n" id="nLead">0</span><span class="lbl">Líderes</span><span class="sub">apuntados</span></div>
+      <div class="tile follow"><span class="n" id="nFollow">0</span><span class="lbl">Followers</span><span class="sub">apuntados</span></div>
+    </div>
+    <details id="namesBox">
+      <summary>Ver nombres</summary>
+      <div class="names">
+        <div class="lead"><h3>Líderes</h3><ul id="listLead"></ul></div>
+        <div class="follow"><h3>Followers</h3><ul id="listFollow"></ul></div>
+      </div>
+    </details>
+    <div class="actions">
+      <button class="btn primary" id="toStep3" type="button">¿Cuántos faltan?</button>
+      <button class="btn link" id="back1" type="button">Volver</button>
+    </div>
+  </section>
+
+  <!-- Paso 3 -->
+  <section class="card step" id="step3" hidden aria-label="Resultado">
+    <div class="verdict" id="verdict"></div>
+    <p class="pairs" id="pairs" style="text-align:center;margin:0"></p>
+    <div class="actions" style="justify-content:center">
+      <button class="btn link" id="back2" type="button">Volver a los apuntados</button>
+    </div>
+    <div class="teacher" id="teacherBox" hidden>
+      <h3>Solo para ti (profe)</h3>
+      <div class="actions" id="copyRow" hidden>
+        <button class="btn ghost" id="copyMsg" type="button">Copiar mensaje para otras clases</button>
+      </div>
+      <p class="note" id="msgPreview"></p>
+      <div>
+        <label for="manName">Añadir a alguien a mano</label>
+        <input type="text" id="manName" maxlength="60" placeholder="Ej. Carlos (clase del martes)">
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="addLead" type="button">+ Líder</button>
+        <button class="btn ghost" id="addFollow" type="button">+ Follower</button>
+        <button class="btn link" id="logout" type="button">Salir del modo profe</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <button class="btn link" id="teacherLink" type="button">Soy el profe</button>
+    <div class="card" id="pinBox" hidden>
+      <div>
+        <label for="pin">PIN de profe</label>
+        <div class="pin-row">
+          <input type="text" id="pin" inputmode="numeric" autocomplete="off" maxlength="20">
+          <button class="btn ghost" id="pinGo" type="button">Entrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+/* ====== CONFIGURACIÓN ======
+   Pega aquí la URL de tu aplicación web de Google Apps Script (termina en /exec). */
+const API_URL = "PEGA_AQUI_LA_URL_DE_APPS_SCRIPT";
+/* =========================== */
+
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const pad = (n) => String(n).padStart(2, "0");
+  const iso = (d) => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+  function upcomingFriday() {
+    const d = new Date(); d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() + ((5 - d.getDay() + 7) % 7));
+    return d;
+  }
+  const classDay = upcomingFriday(), DATE = iso(classDay);
+  const dayMonth = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "long" }).format(classDay);
+  const full = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long" }).format(classDay);
+  $("dateLine").textContent = full.charAt(0).toUpperCase() + full.slice(1);
+
+  const configured = /^https:\/\//.test(API_URL);
+  let attendees = [], step = 1, pickedRole = null, busy = false;
+  let pin = store.get("salsa.pin");
+  let mine = store.get("salsa.mine");
+  if (mine && mine.date !== DATE) { mine = null; store.del("salsa.mine"); }
+  if (mine) { pickedRole = mine.role; $("myName").value = mine.name; }
+
+  /* ---- API ---- */
+  async function apiGet() {
+    const r = await fetch(API_URL + "?action=list&date=" + encodeURIComponent(DATE));
+    const j = await r.json(); if (!j.ok) throw new Error(j.error || "Error"); return j;
+  }
+  async function apiPost(body) {
+    // Sin cabecera Content-Type: se envía como text/plain y el navegador no hace preflight CORS.
+    const r = await fetch(API_URL, { method: "POST", body: JSON.stringify(body) });
+    const j = await r.json(); if (!j.ok) throw new Error(j.error || "Error"); return j;
+  }
+  async function refresh(quiet) {
+    if (!configured) { setStatus("Falta configurar la conexión con Google (API_URL)."); return; }
+    try { const j = await apiGet(); attendees = j.attendees || []; setStatus(""); render(); }
+    catch (e) { if (!quiet) setStatus("No se pudo cargar la lista. Comprueba tu conexión y recarga."); }
+  }
+
+  /* ---- UI ---- */
+  function renderStrip() {
+    const s = $("strip"); s.replaceChildren();
+    [1,2,3,4,5,6,7,8].forEach((b) => {
+      const el = document.createElement("span");
+      el.className = "beat" + (b === 4 || b === 8 ? " rest" : "") + (b === step ? " now" : (b < step ? " done" : ""));
+      el.textContent = b; s.appendChild(el);
+    });
+    $("stripLabel").textContent = "Paso " + step + " de 3";
+  }
+  function go(n) { step = n; [1,2,3].forEach((i) => { $("step" + i).hidden = i !== n; }); renderStrip(); render(); }
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast._t); toast._t = setTimeout(() => { t.hidden = true; }, 2800);
+  }
+  function setStatus(msg) { const s = $("status"); s.textContent = msg || ""; s.hidden = !msg; }
+
+  function render() {
+    const L = attendees.filter((a) => a.role === "leader"), F = attendees.filter((a) => a.role === "follower");
+    $("nLead").textContent = L.length; $("nFollow").textContent = F.length;
+    [["listLead", L], ["listFollow", F]].forEach(([id, arr]) => {
+      const ul = $(id); ul.replaceChildren();
+      if (!arr.length) { const li = document.createElement("li"); li.className = "note"; li.textContent = "Nadie todavía"; ul.appendChild(li); return; }
+      arr.forEach((a) => {
+        const li = document.createElement("li");
+        const nm = document.createElement("span"); nm.textContent = String(a.name).replace(/^'/, ""); li.appendChild(nm);
+        if (a.source === "profe") { const t = document.createElement("span"); t.className = "tag"; t.textContent = "a mano"; li.appendChild(t); }
+        if (pin) {
+          const b = document.createElement("button"); b.type = "button"; b.textContent = "×"; b.setAttribute("aria-label", "Quitar a " + a.name);
+          b.addEventListener("click", () => act({ action: "remove", pin, id: a.id }, "Quitado de la lista")); li.appendChild(b);
+        }
+        ul.appendChild(li);
+      });
+    });
+
+    const v = $("verdict"); v.replaceChildren(); v.className = "verdict";
+    const add = (cls, text) => { const s = document.createElement("span"); s.className = cls; s.textContent = text; v.appendChild(s); };
+    const diff = L.length - F.length, n = Math.abs(diff);
+    let msg = "";
+    if (!attendees.length) { add("pre", "Pista vacía…"); add("what", "Aún no hay nadie apuntado"); add("when", "para la clase del " + dayMonth); }
+    else if (diff === 0) { v.classList.add("ok"); add("pre", "¡Azúcar!"); add("what", "Parejas completas"); add("when", "para la clase del " + dayMonth); }
+    else {
+      const need = diff > 0 ? (n === 1 ? "follower" : "followers") : (n === 1 ? "líder" : "líderes");
+      v.classList.add(diff > 0 ? "need-follow" : "need-lead");
+      add("pre", n === 1 ? "Falta" : "Faltan"); add("num", String(n)); add("what", need); add("when", "para la clase del " + dayMonth);
+      msg = "¡Hola! Para la clase de salsa del viernes " + dayMonth + " nos falta" + (n === 1 ? " " : "n ") + n + " " + need + ". ¿Alguien se apunta? 💃🕺";
+    }
+    $("pairs").textContent = attendees.length ? Math.min(L.length, F.length) + " parejas · " + L.length + " líderes · " + F.length + " followers" : "";
+    $("teacherBox").hidden = !pin; $("teacherLink").hidden = !!pin;
+    $("copyRow").hidden = !msg; $("msgPreview").textContent = msg; $("copyMsg").dataset.msg = msg;
+
+    const box = $("mineBox");
+    if (mine) {
+      box.hidden = false; box.textContent = "Ya estás apuntado como " + (mine.role === "leader" ? "líder" : "follower") + ". Puedes cambiarlo aquí.";
+      $("confirm").textContent = "Guardar cambios"; $("cancel").hidden = false;
+    } else { box.hidden = true; $("confirm").textContent = "¡Me apunto!"; $("cancel").hidden = true; }
+    $("pickLead").setAttribute("aria-pressed", String(pickedRole === "leader"));
+    $("pickFollow").setAttribute("aria-pressed", String(pickedRole === "follower"));
+    $("confirm").disabled = busy || !configured || !pickedRole || !$("myName").value.trim();
+  }
+
+  async function act(body, okMsg) {
+    if (!configured) { toast("Falta configurar la conexión con Google"); return false; }
+    busy = true; render();
+    try {
+      const j = await apiPost(Object.assign({ date: DATE }, body));
+      attendees = j.attendees || attendees; if (okMsg) toast(okMsg); return true;
+    } catch (e) { toast(e.message && e.message !== "Failed to fetch" ? e.message : "No se pudo guardar. Inténtalo de nuevo."); return false; }
+    finally { busy = false; render(); }
+  }
+
+  $("pickLead").addEventListener("click", () => { pickedRole = "leader"; render(); });
+  $("pickFollow").addEventListener("click", () => { pickedRole = "follower"; render(); });
+  $("myName").addEventListener("input", render);
+  $("confirm").addEventListener("click", async () => {
+    const name = $("myName").value.trim();
+    if (mine && mine.name.toLowerCase() !== name.toLowerCase()) await act({ action: "cancel", name: mine.name }, "");
+    if (await act({ action: "rsvp", name, role: pickedRole }, "¡Apuntado! Nos vemos en la pista")) {
+      mine = { date: DATE, name, role: pickedRole }; store.set("salsa.mine", mine); go(2);
+    }
+  });
+  $("cancel").addEventListener("click", async () => {
+    if (mine && await act({ action: "cancel", name: mine.name }, "Has cancelado tu asistencia")) {
+      mine = null; pickedRole = null; store.del("salsa.mine"); render();
+    }
+  });
+  $("skip").addEventListener("click", () => go(2));
+  $("toStep3").addEventListener("click", () => go(3));
+  $("back1").addEventListener("click", () => go(1));
+  $("back2").addEventListener("click", () => go(2));
+  const addManual = async (role) => {
+    const name = $("manName").value.trim();
+    if (!name) { toast("Escribe un nombre primero"); $("manName").focus(); return; }
+    if (await act({ action: "add", pin, name, role }, name + " añadido como " + (role === "leader" ? "líder" : "follower"))) $("manName").value = "";
+  };
+  $("addLead").addEventListener("click", () => addManual("leader"));
+  $("addFollow").addEventListener("click", () => addManual("follower"));
+  $("teacherLink").addEventListener("click", () => { $("pinBox").hidden = !$("pinBox").hidden; if (!$("pinBox").hidden) $("pin").focus(); });
+  $("pinGo").addEventListener("click", async () => {
+    const p = $("pin").value.trim(); if (!p || !configured) return;
+    try {
+      const r = await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "checkPin", pin: p }) });
+      const j = await r.json();
+      if (j.ok) { pin = p; store.set("salsa.pin", p); $("pinBox").hidden = true; $("pin").value = ""; toast("Modo profe activado"); go(3); }
+      else toast("PIN incorrecto");
+    } catch (e) { toast("No se pudo comprobar el PIN. Inténtalo de nuevo."); }
+  });
+  $("logout").addEventListener("click", () => { pin = null; store.del("salsa.pin"); render(); toast("Has salido del modo profe"); });
+  $("copyMsg").addEventListener("click", (ev) => {
+    const msg = ev.currentTarget.dataset.msg || "";
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents($("msgPreview")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selecciona y copia el mensaje"); };
+    try { navigator.clipboard.writeText(msg).then(() => toast("Mensaje copiado"), fallback); } catch (e) { fallback(); }
+  });
+
+  go(1);
+  refresh();
+  setInterval(() => { if (!document.hidden && !busy) refresh(true); }, 30000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(true); });
+})();
+</script>
+</body>
+</html>
